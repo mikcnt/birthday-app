@@ -489,6 +489,31 @@
     let baseX = 0;
     let baseY = 0;
 
+    function startLanding() {
+        currentTrial = 0;
+        clearTrial3Timers();
+        clearTrial4Timers();
+        if (trial4AnimId) cancelAnimationFrame(trial4AnimId);
+        showDim(false);
+        showReveal(false);
+        trial4Lines = [];
+
+        subtitle.textContent =
+            "Before we go anywhere, you need to pass a few tests. Maybe then you'll discover where we're going...";
+        progressWrap.style.display = "none";
+        progressLabel.style.display = "none";
+        setProgress(0);
+
+        yesBtn.style.display = "";
+        yesBtn.textContent = "Start the mission 🚀";
+        yesBtn.classList.remove("neutral");
+        yesBtn.classList.remove("smooth");
+        centerYesButton();
+
+        showSequenceDisplay(false);
+        showEmojiChoices(false);
+    }
+
     function startTrial1() {
         currentTrial = 1;
         clearTrial3Timers();
@@ -500,7 +525,7 @@
         yesBtn.style.display = "";
         showSequenceDisplay(false);
         showEmojiChoices(false);
-        subtitle.textContent = "Trial 1: press and hold YES for 30 seconds.";
+        subtitle.textContent = "Press and hold YES for 30 seconds.";
         progressWrap.style.display = "block";
         progressLabel.style.display = "block";
         setProgress(0);
@@ -1147,7 +1172,9 @@
 
     yesBtn.addEventListener("click", () => {
         if (holding) return;
-        if (currentTrial === 1) {
+        if (currentTrial === 0) {
+            startTrial1();
+        } else if (currentTrial === 1) {
             if (!trialEnded || !nextTrialReady) return;
             startTrial2();
         } else if (currentTrial === 2) {
@@ -1174,7 +1201,7 @@
     });
 
     // Start
-    startTrial1();
+    startLanding();
 
     // Debug controls (temporary)
     debugTrial1.addEventListener("click", () => startTrial1());
