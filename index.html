@@ -261,13 +261,13 @@
 <div class="card">
     <div class="debug-bar" id="debugBar">
         <span class="label">Debug:</span>
-        <button id="debugTrial1">Start Trial 1</button>
-        <button id="debugTrial2">Start Trial 2</button>
-        <button id="debugTrial3">Start Trial 3</button>
-        <button id="debugTrial4">Start Trial 4</button>
+        <button id="debugTrial1">Avvia Prova 1</button>
+        <button id="debugTrial2">Avvia Prova 2</button>
+        <button id="debugTrial3">Avvia Prova 3</button>
+        <button id="debugTrial4">Avvia Prova 4</button>
     </div>
-    <h1 id="title">Birthday mission 🎂</h1>
-    <p id="subtitle">Are you ready to know where we are going?</p>
+    <h1 id="title">Missione compleanno 🎂</h1>
+    <p id="subtitle">Sei pronta a scoprire dove andiamo?</p>
 
     <div class="stage" id="stage">
         <div class="buttons">
@@ -280,7 +280,7 @@
                     <button class="emoji-btn" data-emoji="🌊">🌊</button>
                 </div>
             </div>
-            <button id="yesBtn">HOLD YES 😄</button>
+            <button id="yesBtn">TIENI PREMUTO SÌ 😄</button>
         </div>
     </div>
 
@@ -344,6 +344,11 @@
 
         yesBtn.style.left = nx + "px";
         yesBtn.style.top = ny + "px";
+    }
+
+    function setYesText(text, center = false) {
+        yesBtn.textContent = text;
+        if (center) centerYesButton();
     }
 
     function getYesPos() {
@@ -458,17 +463,17 @@
         {
             sequence: ["🌴", "🌋"],
             buttons: ["🌋", "🌴", "✈️", "🌊"],
-            feedback: "Correct. 👏",
+            feedback: "Corretto. 👏",
         },
         {
             sequence: ["🌊", "✈️", "🌴"],
             buttons: ["🌋", "🌴", "✈️", "🌊"],
-            feedback: "Nice. 🎉",
+            feedback: "Ottimo. 🎉",
         },
         {
             sequence: ["🌋", "🌊", "✈️", "🌴"],
             buttons: ["🌋", "🌴", "✈️", "🌊"],
-            feedback: "Ok, impressive. 🥳",
+            feedback: "Ok, impressionante. 🥳",
         },
         {
             sequence: ["🌴", "🏖️", "🌋", "✈️", "🌊"],
@@ -499,13 +504,13 @@
         trial4Lines = [];
 
         subtitle.textContent =
-            "Before we go anywhere, you need to pass a few tests. Maybe then you'll discover where we're going...";
+            "Prima di andare da qualche parte, devi superare qualche prova. Forse solo allora scoprirai dove andiamo...";
         progressWrap.style.display = "none";
         progressLabel.style.display = "none";
         setProgress(0);
 
         yesBtn.style.display = "";
-        yesBtn.textContent = "Start the mission 🚀";
+        setYesText("Inizia la missione 🚀", true);
         yesBtn.classList.remove("neutral");
         yesBtn.classList.remove("smooth");
         centerYesButton();
@@ -525,12 +530,12 @@
         yesBtn.style.display = "";
         showSequenceDisplay(false);
         showEmojiChoices(false);
-        subtitle.textContent = "Press and hold YES for 30 seconds.";
+        subtitle.textContent = "Tieni premuto SÌ per 30 secondi.";
         progressWrap.style.display = "block";
         progressLabel.style.display = "block";
         setProgress(0);
 
-        yesBtn.textContent = "HOLD YES 😄";
+        setYesText("TIENI PREMUTO SÌ 😄", true);
         yesBtn.classList.remove("neutral");
         yesBtn.classList.remove("smooth");
         trialEnded = false;
@@ -565,10 +570,10 @@
         trialEnded = false;
         nextTrialReady = false;
 
-        subtitle.textContent = "Ok, that one was unfair. This one is easy. Just tap YES 5 times.";
+        subtitle.textContent = "Ok, la prova prima forse era un po' ingiusta. Questa è facile. Tocca SÌ 5 volte.";
         progressWrap.style.display = "none";
         progressLabel.style.display = "none";
-        yesBtn.textContent = "YES 0/5";
+        setYesText("SÌ 0/5", true);
         yesBtn.classList.remove("neutral");
         yesBtn.classList.remove("smooth");
         centerYesButton();
@@ -588,7 +593,7 @@
         trial3Locked = false;
         trial3Ended = false;
 
-        subtitle.textContent = "Watch the emojis.";
+        subtitle.textContent = "Guarda le emoji e ricordati la sequenza.";
         progressWrap.style.display = "none";
         progressLabel.style.display = "none";
         setProgress(0);
@@ -610,12 +615,12 @@
         showDim(false);
         showReveal(false);
 
-        setTrial4Lines(["Ok. No tricks this time."]);
+        setTrial4Lines(["Ok. Niente trucchi questa volta."]);
         progressWrap.style.display = "none";
         progressLabel.style.display = "none";
         setProgress(0);
         yesBtn.style.display = "";
-        yesBtn.textContent = "OK";
+        setYesText("Ok", true);
         yesBtn.classList.add("neutral");
         yesBtn.classList.remove("smooth");
         centerYesButton();
@@ -624,7 +629,7 @@
 
         setTrial4Timer(() => {
             if (currentTrial !== 4) return;
-            addTrial4Line("Just one honest question.");
+            addTrial4Line("Solo una domanda sincera.");
             yesBtn.classList.remove("neutral");
             trial4Step = "question1Ready";
         }, 1200);
@@ -647,7 +652,7 @@
         trial3InputIndex = 0;
         showEmojiChoices(false);
         showSequenceDisplay(true);
-        setTrial3Lines(["Watch the emojis."]);
+        setTrial3Lines(["Guarda le emoji e ricordati la sequenza."]);
 
         setTrial3Buttons(round.buttons);
         sequenceDisplay.textContent = "";
@@ -692,7 +697,7 @@
         showEmojiChoices(false);
         showSequenceDisplay(false);
         yesBtn.style.display = "";
-        yesBtn.textContent = "Next trial";
+        setYesText("Prossima prova", true);
         yesBtn.classList.add("neutral");
         centerYesButton();
     }
@@ -709,7 +714,7 @@
                 trial3InputIndex = 0;
 
                 if (trial3FailCount === 1) {
-                    setTrial3Lines(["Wrong."]);
+                    setTrial3Lines(["Sbagliato."]);
                     trial3Locked = true;
                     showEmojiChoices(false);
                     showSequenceDisplay(true);
@@ -717,7 +722,7 @@
                     return;
                 }
                 if (trial3FailCount === 2) {
-                    setTrial3Lines(["Nope. That’s not it."]);
+                    setTrial3Lines(["No. Non è quello."]);
                     trial3Locked = true;
                     showEmojiChoices(false);
                     showSequenceDisplay(true);
@@ -725,7 +730,7 @@
                     return;
                 }
                 if (trial3FailCount === 3) {
-                    setTrial3Lines(["You already messed this up."]);
+                    setTrial3Lines(["L'hai già rovinato."]);
                     trial3Locked = true;
                     showEmojiChoices(false);
                     showSequenceDisplay(true);
@@ -734,21 +739,21 @@
                 }
 
                 trial3Locked = true;
-                setTrial3Lines(["Wait."]);
-                setTrial3Timer(() => addTrial3Line("You’re right."), 700);
-                setTrial3Timer(() => addTrial3Line("One of the emojis is missing."), 1400);
-                setTrial3Timer(() => setTrial3Lines(["That’s… unfortunate."]), 2400);
+                setTrial3Lines(["Aspetta."]);
+                setTrial3Timer(() => addTrial3Line("Hai ragione."), 700);
+                setTrial3Timer(() => addTrial3Line("Manca uno degli emoji."), 1400);
+                setTrial3Timer(() => setTrial3Lines(["Questo... è sfortunato."]), 2400);
                 setTrial3Timer(() => {
                     setTrial3Lines([
-                        "Ok, clearly this test was poorly designed.",
-                        "Or maybe you’re just not meant to know yet.",
+                        "Ok, chiaramente questo test è fatto male.",
+                        "O forse non devi saperlo ancora.",
                     ]);
                     endTrial3();
                 }, 3600);
                 return;
             }
 
-            setTrial3Lines(["Wrong."]);
+            setTrial3Lines(["Sbagliato."]);
             trial3InputIndex = 0;
             trial3Locked = true;
             showEmojiChoices(false);
@@ -761,7 +766,7 @@
         if (trial3InputIndex < round.sequence.length) return;
 
         if (!round.impossible) {
-            setTrial3Lines([round.feedback || "Correct."]);
+            setTrial3Lines([round.feedback || "Corretto."]);
             trial3RoundIndex += 1;
             trial3InputIndex = 0;
             trial3Locked = true;
@@ -834,17 +839,17 @@
 
         if (trial4Step === "intro" || trial4Step === "question1Ready") {
             clearTrial4Timers();
-            const introLine = "Just one honest question.";
+            const introLine = "Solo una domanda sincera.";
             if (!trial4Lines.includes(introLine)) {
                 addTrial4Line(introLine);
             }
-            addTrial4Line("Do you trust me?");
-            yesBtn.textContent = "YES";
+            addTrial4Line("Ti fidi di me?");
+            setYesText("SÌ", true);
             yesBtn.classList.add("neutral");
             trial4Step = "question1Asked";
             setTrial4Timer(() => {
                 if (currentTrial !== 4) return;
-                addTrial4Line("And are you ready to go on an adventure with me?");
+                addTrial4Line("E sei pronta a partire per un'avventura con me?");
                 yesBtn.classList.remove("neutral");
                 trial4Step = "question2Ready";
             }, 1000);
@@ -854,21 +859,21 @@
         if (trial4Step === "question2Ready") {
             clearTrial4Timers();
             trial4Step = "fakeEnding";
-            yesBtn.textContent = "YES";
+            setYesText("SÌ", true);
             yesBtn.classList.add("neutral");
-            setTrial4Lines(["Alright then."]);
+            setTrial4Lines(["Allora ok."]);
             setTrial4Timer(() => {
                 if (currentTrial !== 4) return;
-                addTrial4Line("Let's go.");
+                addTrial4Line("Andiamo.");
             }, 700);
             setTrial4Timer(() => {
                 if (currentTrial !== 4) return;
-                setTrial4Lines(["Actually..."]);
+                setTrial4Lines(["Anzi..."]);
             }, 1400);
             setTrial4Timer(() => {
                 if (currentTrial !== 4) return;
-                addTrial4Line("One last thing.");
-                yesBtn.textContent = "Reveal destination";
+                addTrial4Line("Un'ultima cosa.");
+                setYesText("Rivela destinazione", true);
                 yesBtn.classList.remove("neutral");
                 centerYesButton();
                 trial4Step = "revealButton";
@@ -887,23 +892,23 @@
         if (trial2Step === "goBack") {
             trial2Step = "byTwo";
             trial2ByTwoValue = 0;
-            subtitle.textContent = "Ok, let's go 2 by 2, otherwise we'll never make it";
-            yesBtn.textContent = "YES 0/5";
+            subtitle.textContent = "Ok, andiamo di 2 in 2, altrimenti non finiamo mai!";
+            setYesText("SÌ 0/5", true);
             yesBtn.classList.remove("neutral");
             return;
         }
 
         if (trial2Step === "byTwo") {
             trial2ByTwoValue += 2;
-            yesBtn.textContent = `YES ${trial2ByTwoValue}/5`;
+            setYesText(`SÌ ${trial2ByTwoValue}/5`, true);
             if (trial2ByTwoValue >= 6) {
                 trial2Step = "done";
                 subtitle.textContent =
-                    "I guess you either can't count or you really don't want to go... should we go to the next trial?";
+                    "Credo che o non sai contare o non vuoi proprio andare... passiamo alla prossima prova, va...";
                 yesBtn.classList.add("neutral");
                 trial2NextReady = false;
                 trial2Timer = setTimeout(() => {
-                    yesBtn.textContent = "Go to next trial";
+                    setYesText("Vai alla prossima prova", true);
                     centerYesButton();
                     trial2NextReady = true;
                 }, 3000);
@@ -914,31 +919,31 @@
         trial2TapCount += 1;
 
         if (trial2TapCount <= 4) {
-            if (trial2TapCount === 1) subtitle.textContent = "Good.";
-            else if (trial2TapCount === 2) subtitle.textContent = "Nice.";
-            else if (trial2TapCount === 3) subtitle.textContent = "Almost there.";
-            yesBtn.textContent = `YES ${trial2TapCount}/5`;
+            if (trial2TapCount === 1) subtitle.textContent = "Bene.";
+            else if (trial2TapCount === 2) subtitle.textContent = "Ottimo.";
+            else if (trial2TapCount === 3) subtitle.textContent = "Ci sei quasi.";
+            setYesText(`SÌ ${trial2TapCount}/5`, true);
             return;
         }
 
         if (trial2TapCount === 5) {
             trial2Step = "backedOnce";
-            subtitle.textContent = "Huh? Why did you go back?";
-            yesBtn.textContent = "YES 3/5";
+            subtitle.textContent = "Eh? Perché sei tornata indietro?";
+            setYesText("SÌ 3/5", true);
             return;
         }
 
         if (trial2TapCount === 6) {
             trial2Step = "decimals";
             trial2DecimalIndex = 1;
-            subtitle.textContent = "Ok. Keep going.";
-            yesBtn.textContent = "YES 4/5";
+            subtitle.textContent = "Ok. Continua.";
+            setYesText("SÌ 4/5", true);
             return;
         }
 
         if (trial2Step === "decimals") {
             if (trial2DecimalIndex <= 9) {
-                yesBtn.textContent = `YES 4.${trial2DecimalIndex}/5`;
+                setYesText(`SÌ 4.${trial2DecimalIndex}/5`, true);
                 trial2DecimalIndex += 1;
                 if (trial2DecimalIndex === 10) {
                     trial2Step = "skipFiveNext";
@@ -948,13 +953,14 @@
         }
 
         if (trial2Step === "skipFiveNext") {
-            subtitle.textContent = "Cmon dude, you skipped 5! Go back.";
+            subtitle.textContent = "Dai, hai saltato il 5! Torna indietro.";
             trial2Step = "sixPause";
-            yesBtn.textContent = "YES 6/5";
+            setYesText("SÌ 6/5", true);
             yesBtn.classList.add("neutral");
             if (trial2Timer) clearTimeout(trial2Timer);
             trial2Timer = setTimeout(() => {
-                yesBtn.textContent = "Go back";
+                setYesText("Torna indietro", true);
+                centerYesButton();
                 trial2Step = "goBack";
             }, 2000);
         }
@@ -966,21 +972,21 @@
         rafId = null;
 
         yesBtn.style.transform = "scale(1)";
-        yesBtn.textContent = "You can let go now";
+        setYesText("Ora puoi lasciare", true);
         yesBtn.classList.add("neutral");
         yesBtn.classList.add("smooth");
         centerYesButton();
         setProgress(100);
 
         subtitle.textContent =
-            "Well... you didn't make it. Do you even care about this?! Nevermind, let's try something else...";
+            "Beh... non ce l'hai fatta. Ma ti interessa davvero?! Va beh, proviamo qualcos'altro...";
 
         if (navigator.vibrate) navigator.vibrate([50, 80, 50]);
         trialEnded = true;
         nextTrialReady = false;
 
         nextTrialTimer = setTimeout(() => {
-            yesBtn.textContent = "Go to next trial";
+            setYesText("Vai alla prossima prova", true);
             centerYesButton();
             nextTrialReady = true;
         }, 3500);
@@ -1101,13 +1107,13 @@
 
         // Update subtitle at key moments
         if (elapsedS < 10) {
-            subtitle.textContent = "Ok. Just hold it... 30 seconds.";
+            subtitle.textContent = "Ok. Tieni premuto... 30 secondi.";
         } else if (elapsedS < 15) {
-            subtitle.textContent = "Oh! It moved. Keep holding.";
+            subtitle.textContent = "Oh! Si è mosso. Continua a tenere.";
         } else if (elapsedS < 20) {
-            subtitle.textContent = "It is getting faster 😈";
+            subtitle.textContent = "Sta accelerando 😈";
         } else if (elapsedS < 25) {
-            subtitle.textContent = "Up and down now. Do not let go!";
+            subtitle.textContent = "Su e giù ora. Non mollare!";
         } else {
             subtitle.textContent = "HAHAHAHAHAHA";
         }
@@ -1158,7 +1164,7 @@
 
         yesBtn.style.transform = "scale(1)";
 
-        subtitle.textContent = "You let go. That is... tragic. Try again.";
+        subtitle.textContent = "Hai mollato. È... tragico. Riprova.";
         if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
 
         // Reset progress + reposition to center
