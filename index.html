@@ -141,7 +141,7 @@
             color: var(--muted);
             line-height: 1.35;
             font-size: 15px;
-            min-height: 40px;
+            min-height: 96px;
         }
 
         .stage {
@@ -156,6 +156,36 @@
         .buttons {
             position: absolute;
             inset: 0;
+        }
+
+        #sequenceDisplay {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+
+        #emojiChoices {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #emojiChoices .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            width: min(220px, 70%);
+        }
+
+        #emojiChoices .emoji-btn {
+            font-size: 28px;
+            padding: 10px 0;
+            line-height: 1;
         }
 
         button {
@@ -234,12 +264,22 @@
         <button id="debugTrial1">Start Trial 1</button>
         <button id="debugTrial2">Start Trial 2</button>
         <button id="debugTrial3">Start Trial 3</button>
+        <button id="debugTrial4">Start Trial 4</button>
     </div>
     <h1 id="title">Birthday mission 🎂</h1>
     <p id="subtitle">Are you ready to know where we are going?</p>
 
     <div class="stage" id="stage">
         <div class="buttons">
+            <div id="sequenceDisplay"></div>
+            <div id="emojiChoices">
+                <div class="emoji-grid">
+                    <button class="emoji-btn" data-emoji="🌋">🌋</button>
+                    <button class="emoji-btn" data-emoji="🌴">🌴</button>
+                    <button class="emoji-btn" data-emoji="✈️">✈️</button>
+                    <button class="emoji-btn" data-emoji="🌊">🌊</button>
+                </div>
+            </div>
             <button id="yesBtn">HOLD YES 😄</button>
         </div>
     </div>
@@ -261,9 +301,13 @@
     const debugTrial1 = document.getElementById("debugTrial1");
     const debugTrial2 = document.getElementById("debugTrial2");
     const debugTrial3 = document.getElementById("debugTrial3");
+    const debugTrial4 = document.getElementById("debugTrial4");
     const dimOverlay = document.getElementById("dimOverlay");
     const reveal = document.getElementById("reveal");
     const confetti = document.getElementById("confetti");
+    const sequenceDisplay = document.getElementById("sequenceDisplay");
+    const emojiChoices = document.getElementById("emojiChoices");
+    const emojiButtons = [...emojiChoices.querySelectorAll(".emoji-btn")];
 
     const progressWrap = document.getElementById("progress");
     const progressBar = progressWrap.querySelector("div");
@@ -312,14 +356,25 @@
         setYesPosition(Math.round((rect.width - b.width) / 2), Math.round((rect.height - b.height) / 2));
     }
 
-    function setTrial3Lines(lines) {
-        trial3Lines = [...lines];
-        subtitle.innerHTML = trial3Lines.join("<br>");
+    function setTrial4Lines(lines) {
+        trial4Lines = [...lines];
+        subtitle.innerHTML = trial4Lines.join("<br>");
     }
 
-    function addTrial3Line(line) {
-        trial3Lines.push(line);
-        subtitle.innerHTML = trial3Lines.join("<br>");
+    function addTrial4Line(line) {
+        trial4Lines.push(line);
+        subtitle.innerHTML = trial4Lines.join("<br>");
+    }
+
+    function clearTrial4Timers() {
+        trial4Timers.forEach((id) => clearTimeout(id));
+        trial4Timers = [];
+    }
+
+    function setTrial4Timer(fn, delay) {
+        const id = setTimeout(fn, delay);
+        trial4Timers.push(id);
+        return id;
     }
 
     function clearTrial3Timers() {
@@ -331,6 +386,24 @@
         const id = setTimeout(fn, delay);
         trial3Timers.push(id);
         return id;
+    }
+
+    function setTrial3Lines(lines) {
+        subtitle.innerHTML = lines.join("<br>");
+    }
+
+    function addTrial3Line(line) {
+        subtitle.innerHTML = subtitle.innerHTML
+            ? `${subtitle.innerHTML}<br>${line}`
+            : line;
+    }
+
+    function showSequenceDisplay(show) {
+        sequenceDisplay.style.display = show ? "flex" : "none";
+    }
+
+    function showEmojiChoices(show) {
+        emojiChoices.style.display = show ? "flex" : "none";
     }
 
     function showDim(show) {
@@ -374,11 +447,43 @@
     let trial2Timer = null;
 
     // Trial 3 state
-    let trial3Step = "intro";
+    let trial3RoundIndex = 0;
+    let trial3InputIndex = 0;
+    let trial3FailCount = 0;
+    let trial3Locked = false;
+    let trial3Ended = false;
     let trial3Timers = [];
-    let trial3Progress = 0;
-    let trial3AnimId = null;
-    let trial3Lines = [];
+
+    const trial3Rounds = [
+        {
+            sequence: ["🌴", "🌋"],
+            buttons: ["🌋", "🌴", "✈️", "🌊"],
+            feedback: "Correct. 👏",
+        },
+        {
+            sequence: ["🌊", "✈️", "🌴"],
+            buttons: ["🌋", "🌴", "✈️", "🌊"],
+            feedback: "Nice. 🎉",
+        },
+        {
+            sequence: ["🌋", "🌊", "✈️", "🌴"],
+            buttons: ["🌋", "🌴", "✈️", "🌊"],
+            feedback: "Ok, impressive. 🥳",
+        },
+        {
+            sequence: ["🌴", "🏖️", "🌋", "✈️", "🌊"],
+            buttons: ["🌋", "🌴", "✈️", "🌊"],
+            feedback: null,
+            impossible: true,
+        },
+    ];
+
+    // Trial 4 state
+    let trial4Step = "intro";
+    let trial4Timers = [];
+    let trial4Progress = 0;
+    let trial4AnimId = null;
+    let trial4Lines = [];
 
     // Motion base
     let baseX = 0;
@@ -387,10 +492,14 @@
     function startTrial1() {
         currentTrial = 1;
         clearTrial3Timers();
-        if (trial3AnimId) cancelAnimationFrame(trial3AnimId);
+        clearTrial4Timers();
+        if (trial4AnimId) cancelAnimationFrame(trial4AnimId);
         showDim(false);
         showReveal(false);
-        trial3Lines = [];
+        trial4Lines = [];
+        yesBtn.style.display = "";
+        showSequenceDisplay(false);
+        showEmojiChoices(false);
         subtitle.textContent = "Trial 1: press and hold YES for 30 seconds.";
         progressWrap.style.display = "block";
         progressLabel.style.display = "block";
@@ -411,10 +520,14 @@
     function startTrial2() {
         currentTrial = 2;
         clearTrial3Timers();
-        if (trial3AnimId) cancelAnimationFrame(trial3AnimId);
+        clearTrial4Timers();
+        if (trial4AnimId) cancelAnimationFrame(trial4AnimId);
         showDim(false);
         showReveal(false);
-        trial3Lines = [];
+        trial4Lines = [];
+        yesBtn.style.display = "";
+        showSequenceDisplay(false);
+        showEmojiChoices(false);
         trial2TapCount = 0;
         trial2Step = "normal";
         trial2DecimalIndex = 1;
@@ -438,54 +551,227 @@
 
     function startTrial3() {
         currentTrial = 3;
-        trial3Step = "intro";
-        trial3Progress = 0;
         clearTrial3Timers();
-        if (trial3AnimId) cancelAnimationFrame(trial3AnimId);
+        clearTrial4Timers();
+        if (trial4AnimId) cancelAnimationFrame(trial4AnimId);
         showDim(false);
         showReveal(false);
 
-        setTrial3Lines(["Ok. No tricks this time."]);
+        trial3RoundIndex = 0;
+        trial3InputIndex = 0;
+        trial3FailCount = 0;
+        trial3Locked = false;
+        trial3Ended = false;
+
+        subtitle.textContent = "Watch the emojis.";
         progressWrap.style.display = "none";
         progressLabel.style.display = "none";
         setProgress(0);
-        yesBtn.textContent = "YES";
-        yesBtn.classList.remove("neutral");
-        yesBtn.classList.remove("smooth");
+        yesBtn.style.display = "none";
+        showSequenceDisplay(true);
+        showEmojiChoices(false);
         centerYesButton();
 
-        setTrial3Timer(() => {
-            if (currentTrial !== 3) return;
-            addTrial3Line("Just one honest question.");
-            trial3Step = "question1Ready";
+        playTrial3Round();
+    }
+
+    function startTrial4() {
+        currentTrial = 4;
+        trial4Step = "intro";
+        trial4Progress = 0;
+        clearTrial3Timers();
+        clearTrial4Timers();
+        if (trial4AnimId) cancelAnimationFrame(trial4AnimId);
+        showDim(false);
+        showReveal(false);
+
+        setTrial4Lines(["Ok. No tricks this time."]);
+        progressWrap.style.display = "none";
+        progressLabel.style.display = "none";
+        setProgress(0);
+        yesBtn.style.display = "";
+        yesBtn.textContent = "OK";
+        yesBtn.classList.add("neutral");
+        yesBtn.classList.remove("smooth");
+        centerYesButton();
+        showSequenceDisplay(false);
+        showEmojiChoices(false);
+
+        setTrial4Timer(() => {
+            if (currentTrial !== 4) return;
+            addTrial4Line("Just one honest question.");
+            yesBtn.classList.remove("neutral");
+            trial4Step = "question1Ready";
         }, 1200);
+    }
+
+    function setTrial3Buttons(buttons) {
+        emojiButtons.forEach((btn, idx) => {
+            const emoji = buttons[idx];
+            btn.textContent = emoji;
+            btn.dataset.emoji = emoji;
+        });
+    }
+
+    function playTrial3Round() {
+        const round = trial3Rounds[trial3RoundIndex];
+        if (!round) return;
+
+        clearTrial3Timers();
+        trial3Locked = true;
+        trial3InputIndex = 0;
+        showEmojiChoices(false);
+        showSequenceDisplay(true);
+        setTrial3Lines(["Watch the emojis."]);
+
+        setTrial3Buttons(round.buttons);
+        sequenceDisplay.textContent = "";
+
+        const countdownStepMs = 700;
+        setTrial3Timer(() => {
+            sequenceDisplay.textContent = "3";
+        }, 0);
+        setTrial3Timer(() => {
+            sequenceDisplay.textContent = "2";
+        }, countdownStepMs);
+        setTrial3Timer(() => {
+            sequenceDisplay.textContent = "1";
+        }, countdownStepMs * 2);
+
+        let delay = countdownStepMs * 3 + 200;
+        const showMs = 850;
+        const gapMs = 250;
+        round.sequence.forEach((emoji, idx) => {
+            setTrial3Timer(() => {
+                sequenceDisplay.textContent = emoji;
+            }, delay);
+            delay += showMs;
+            setTrial3Timer(() => {
+                sequenceDisplay.textContent = "";
+            }, delay);
+            delay += gapMs;
+            if (idx === round.sequence.length - 1) {
+                setTrial3Timer(() => {
+                    if (currentTrial !== 3) return;
+                    showSequenceDisplay(false);
+                    showEmojiChoices(true);
+                    trial3Locked = false;
+                    setTrial3Lines([]);
+                }, delay);
+            }
+        });
+    }
+
+    function endTrial3() {
+        trial3Ended = true;
+        showEmojiChoices(false);
+        showSequenceDisplay(false);
+        yesBtn.style.display = "";
+        yesBtn.textContent = "Next trial";
+        yesBtn.classList.add("neutral");
+        centerYesButton();
+    }
+
+    function handleTrial3Choice(emoji) {
+        if (trial3Locked || trial3Ended) return;
+        const round = trial3Rounds[trial3RoundIndex];
+        if (!round) return;
+
+        const expected = round.sequence[trial3InputIndex];
+        if (emoji !== expected) {
+            if (round.impossible) {
+                trial3FailCount += 1;
+                trial3InputIndex = 0;
+
+                if (trial3FailCount === 1) {
+                    setTrial3Lines(["Wrong."]);
+                    trial3Locked = true;
+                    showEmojiChoices(false);
+                    showSequenceDisplay(true);
+                    setTrial3Timer(() => playTrial3Round(), 900);
+                    return;
+                }
+                if (trial3FailCount === 2) {
+                    setTrial3Lines(["Nope. That’s not it."]);
+                    trial3Locked = true;
+                    showEmojiChoices(false);
+                    showSequenceDisplay(true);
+                    setTrial3Timer(() => playTrial3Round(), 900);
+                    return;
+                }
+                if (trial3FailCount === 3) {
+                    setTrial3Lines(["You already messed this up."]);
+                    trial3Locked = true;
+                    showEmojiChoices(false);
+                    showSequenceDisplay(true);
+                    setTrial3Timer(() => playTrial3Round(), 900);
+                    return;
+                }
+
+                trial3Locked = true;
+                setTrial3Lines(["Wait."]);
+                setTrial3Timer(() => addTrial3Line("You’re right."), 700);
+                setTrial3Timer(() => addTrial3Line("One of the emojis is missing."), 1400);
+                setTrial3Timer(() => setTrial3Lines(["That’s… unfortunate."]), 2400);
+                setTrial3Timer(() => {
+                    setTrial3Lines([
+                        "Ok, clearly this test was poorly designed.",
+                        "Or maybe you’re just not meant to know yet.",
+                    ]);
+                    endTrial3();
+                }, 3600);
+                return;
+            }
+
+            setTrial3Lines(["Wrong."]);
+            trial3InputIndex = 0;
+            trial3Locked = true;
+            showEmojiChoices(false);
+            showSequenceDisplay(true);
+            setTrial3Timer(() => playTrial3Round(), 900);
+            return;
+        }
+
+        trial3InputIndex += 1;
+        if (trial3InputIndex < round.sequence.length) return;
+
+        if (!round.impossible) {
+            setTrial3Lines([round.feedback || "Correct."]);
+            trial3RoundIndex += 1;
+            trial3InputIndex = 0;
+            trial3Locked = true;
+            setTrial3Timer(() => {
+                if (currentTrial !== 3) return;
+                playTrial3Round();
+            }, 900);
+        }
     }
 
     function animateProgressTo(target, duration, onDone) {
         const start = performance.now();
-        const from = trial3Progress;
+        const from = trial4Progress;
         const delta = target - from;
 
         const step = (now) => {
             const t = clamp((now - start) / duration, 0, 1);
             const eased = t * (2 - t);
-            trial3Progress = from + delta * eased;
-            setProgress(trial3Progress);
+            trial4Progress = from + delta * eased;
+            setProgress(trial4Progress);
             if (t < 1) {
-                trial3AnimId = requestAnimationFrame(step);
+                trial4AnimId = requestAnimationFrame(step);
             } else if (onDone) {
                 onDone();
             }
         };
-        trial3AnimId = requestAnimationFrame(step);
+        trial4AnimId = requestAnimationFrame(step);
     }
 
-    function runTrial3Progress() {
-        trial3Step = "progress";
+    function runTrial4Progress() {
+        trial4Step = "progress";
         progressWrap.style.display = "block";
         progressLabel.style.display = "block";
         setProgress(0);
-        trial3Progress = 0;
+        trial4Progress = 0;
 
         animateProgressTo(99, 3400, () => {
             setTrial3Timer(() => {
@@ -511,56 +797,62 @@
     }
 
     function revealDestination() {
-        trial3Step = "reveal";
+        trial4Step = "reveal";
         showDim(false);
         showReveal(true);
         spawnConfetti();
         if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
     }
 
-    function handleTrial3Tap() {
-        if (trial3Step === "progress" || trial3Step === "reveal") return;
+    function handleTrial4Tap() {
+        if (trial4Step === "progress" || trial4Step === "reveal") return;
 
-        if (trial3Step === "intro" || trial3Step === "question1Ready") {
-            clearTrial3Timers();
+        if (trial4Step === "intro" || trial4Step === "question1Ready") {
+            clearTrial4Timers();
             const introLine = "Just one honest question.";
-            if (!trial3Lines.includes(introLine)) {
-                addTrial3Line(introLine);
+            if (!trial4Lines.includes(introLine)) {
+                addTrial4Line(introLine);
             }
-            addTrial3Line("Do you trust me?");
-            trial3Step = "question1Asked";
-            setTrial3Timer(() => {
-                if (currentTrial !== 3) return;
-                addTrial3Line("And are you ready to go on an adventure with me?");
-                trial3Step = "question2Ready";
+            addTrial4Line("Do you trust me?");
+            yesBtn.textContent = "YES";
+            yesBtn.classList.add("neutral");
+            trial4Step = "question1Asked";
+            setTrial4Timer(() => {
+                if (currentTrial !== 4) return;
+                addTrial4Line("And are you ready to go on an adventure with me?");
+                yesBtn.classList.remove("neutral");
+                trial4Step = "question2Ready";
             }, 1000);
             return;
         }
 
-        if (trial3Step === "question2Ready") {
-            clearTrial3Timers();
-            trial3Step = "fakeEnding";
-            setTrial3Lines(["Alright then."]);
-            setTrial3Timer(() => {
-                if (currentTrial !== 3) return;
-                addTrial3Line("Let's go.");
+        if (trial4Step === "question2Ready") {
+            clearTrial4Timers();
+            trial4Step = "fakeEnding";
+            yesBtn.textContent = "YES";
+            yesBtn.classList.add("neutral");
+            setTrial4Lines(["Alright then."]);
+            setTrial4Timer(() => {
+                if (currentTrial !== 4) return;
+                addTrial4Line("Let's go.");
             }, 700);
-            setTrial3Timer(() => {
-                if (currentTrial !== 3) return;
-                setTrial3Lines(["Actually..."]);
+            setTrial4Timer(() => {
+                if (currentTrial !== 4) return;
+                setTrial4Lines(["Actually..."]);
             }, 1400);
-            setTrial3Timer(() => {
-                if (currentTrial !== 3) return;
-                addTrial3Line("One last thing.");
+            setTrial4Timer(() => {
+                if (currentTrial !== 4) return;
+                addTrial4Line("One last thing.");
                 yesBtn.textContent = "Reveal destination";
+                yesBtn.classList.remove("neutral");
                 centerYesButton();
-                trial3Step = "revealButton";
+                trial4Step = "revealButton";
             }, 2100);
             return;
         }
 
-        if (trial3Step === "revealButton") {
-            runTrial3Progress();
+        if (trial4Step === "revealButton") {
+            runTrial4Progress();
         }
     }
 
@@ -865,8 +1157,20 @@
             }
             handleTrial2Tap();
         } else if (currentTrial === 3) {
-            handleTrial3Tap();
+            if (trial3Ended) {
+                startTrial4();
+                return;
+            }
+        } else if (currentTrial === 4) {
+            handleTrial4Tap();
         }
+    });
+
+    emojiButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            if (currentTrial !== 3) return;
+            handleTrial3Choice(btn.dataset.emoji);
+        });
     });
 
     // Start
@@ -876,6 +1180,7 @@
     debugTrial1.addEventListener("click", () => startTrial1());
     debugTrial2.addEventListener("click", () => startTrial2());
     debugTrial3.addEventListener("click", () => startTrial3());
+    debugTrial4.addEventListener("click", () => startTrial4());
 </script>
 </body>
 </html>
