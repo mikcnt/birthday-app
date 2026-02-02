@@ -298,6 +298,7 @@
     const stage = document.getElementById("stage");
     const yesBtn = document.getElementById("yesBtn");
     const subtitle = document.getElementById("subtitle");
+    const debugBar = document.getElementById("debugBar");
     const debugTrial1 = document.getElementById("debugTrial1");
     const debugTrial2 = document.getElementById("debugTrial2");
     const debugTrial3 = document.getElementById("debugTrial3");
@@ -312,6 +313,9 @@
     const progressWrap = document.getElementById("progress");
     const progressBar = progressWrap.querySelector("div");
     const progressLabel = document.getElementById("progressLabel");
+
+    const showDebug = false;
+    debugBar.style.display = showDebug ? "flex" : "none";
 
     function clamp(n, min, max) {
         return Math.max(min, Math.min(max, n));
@@ -570,7 +574,7 @@
         trialEnded = false;
         nextTrialReady = false;
 
-        subtitle.textContent = "Ok, la prova prima forse era un po' ingiusta. Questa è facile. Tocca SÌ 5 volte.";
+        subtitle.textContent = "Ok, la prima prova forse era un po' ingiusta. Questa è facile. Tocca SÌ 5 volte.";
         progressWrap.style.display = "none";
         progressLabel.style.display = "none";
         setYesText("SÌ 0/5", true);
