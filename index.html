@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Birthday Surprise</title>
+    <style>
+        :root {
+            --bg1: #0f1020;
+            --bg2: #1b2a49;
+            --card: rgba(255, 255, 255, 0.08);
+            --text: rgba(255, 255, 255, 0.92);
+            --muted: rgba(255, 255, 255, 0.70);
+            --yes: #4ade80;
+            --no: #fb7185;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: radial-gradient(1200px 600px at 20% 10%, #2a3a7a 0%, transparent 60%),
+            radial-gradient(1000px 700px at 80% 90%, #0ea5e9 0%, transparent 55%),
+            linear-gradient(135deg, var(--bg1), var(--bg2));
+            overflow: hidden;
+        }
+
+        .card {
+            width: min(560px, calc(100vw - 32px));
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 20px;
+            padding: 22px 18px;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.45);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin: 0 0 8px 0;
+            letter-spacing: 0.2px;
+        }
+
+        p {
+            margin: 0 0 16px 0;
+            color: var(--muted);
+            line-height: 1.35;
+            font-size: 15px;
+        }
+
+        .stage {
+            position: relative;
+            height: 220px;
+            border-radius: 16px;
+            border: 1px dashed rgba(255,255,255,0.18);
+            background: rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+
+        .buttons {
+            position: absolute;
+            inset: 0;
+        }
+
+        button {
+            appearance: none;
+            border: none;
+            border-radius: 999px;
+            padding: 14px 18px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+            box-shadow: 0 14px 30px rgba(0,0,0,0.35);
+            transform: translateZ(0);
+        }
+
+        #yesBtn {
+            position: absolute;
+            left: 60%;
+            top: 55%;
+            background: var(--yes);
+            color: #0b1220;
+        }
+
+        #noBtn {
+            position: absolute;
+            left: 18%;
+            top: 58%;
+            background: rgba(255,255,255,0.14);
+            color: var(--text);
+            border: 1px solid rgba(255,255,255,0.18);
+        }
+
+        .small {
+            font-size: 12px;
+            color: rgba(255,255,255,0.55);
+            margin-top: 12px;
+        }
+
+        .reveal {
+            display: none;
+            margin-top: 14px;
+            border-radius: 16px;
+            padding: 14px 14px;
+            background: rgba(0,0,0,0.18);
+            border: 1px solid rgba(255,255,255,0.14);
+        }
+
+        .reveal h2 {
+            margin: 0 0 6px 0;
+            font-size: 20px;
+        }
+
+        .reveal .place {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 0.4px;
+        }
+
+        .pill {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.18);
+            font-weight: 700;
+        }
+
+        canvas.confetti {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .shake {
+            animation: shake 300ms ease-in-out;
+        }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            50% { transform: translateX(4px); }
+            75% { transform: translateX(-3px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
+</head>
+
+<body>
+<canvas class="confetti" id="confetti"></canvas>
+
+<div class="card">
+    <h1 id="title">Birthday mission 🎂</h1>
+    <p id="subtitle">Are you ready to know where we're going?</p>
+
+    <div class="stage" id="stage">
+        <div class="buttons">
+            <button id="yesBtn">YES 😄</button>
+            <button id="noBtn">No (boring)</button>
+        </div>
+    </div>
+
+    <div class="reveal" id="reveal">
+        <h2>Ok ok ok... you are ready.</h2>
+        <div class="place">Tenerife 🌋🌴</div>
+        <div class="pill">Happy birthday, love ❤️</div>
+    </div>
+
+    <div class="small">Tip: works best on phone. Try to tap "YES".</div>
+</div>
+
+<script>
+    const stage = document.getElementById("stage");
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn = document.getElementById("noBtn");
+    const subtitle = document.getElementById("subtitle");
+    const reveal = document.getElementById("reveal");
+
+    const lines = [
+        'Come on, just tap "YES" 😄',
+        "Hmm... interesting technique.",
+        "Ok, maybe you're not ready and we should go home? 😔",
+        "Ok nevermind, let's go home.",
+        "You would have clicked yes by now, if you wanted to go...",
+        "Last chance. Seriously.",
+        "Alright. I will allow it. Tap me now."
+    ];
+
+    let dodges = 0;
+    let unlocked = false;
+
+    function stageRect() {
+        return stage.getBoundingClientRect();
+    }
+
+    function clamp(n, min, max) {
+        return Math.max(min, Math.min(max, n));
+    }
+
+    function moveYesButtonAwayFrom(x, y) {
+        const rect = stageRect();
+
+        // Button size might change on mobile, measure it
+        const b = yesBtn.getBoundingClientRect();
+        const bw = b.width;
+        const bh = b.height;
+
+        // Compute a target position that tries to be far from the pointer
+        const localX = x - rect.left;
+        const localY = y - rect.top;
+
+        // Random-ish direction but biased away from pointer
+        const angle = Math.atan2(localY - rect.height / 2, localX - rect.width / 2) + Math.PI;
+        const dist = 80 + Math.random() * 80;
+
+        let nx = (yesBtn.offsetLeft + Math.cos(angle) * dist) + (Math.random() * 30 - 15);
+        let ny = (yesBtn.offsetTop + Math.sin(angle) * dist) + (Math.random() * 30 - 15);
+
+        // Keep inside stage
+        nx = clamp(nx, 8, rect.width - bw - 8);
+        ny = clamp(ny, 8, rect.height - bh - 8);
+
+        yesBtn.style.left = nx + "px";
+        yesBtn.style.top = ny + "px";
+    }
+
+    function updateText() {
+        const idx = Math.min(dodges, lines.length - 1);
+        subtitle.textContent = lines[idx];
+    }
+
+    function unlock() {
+        unlocked = true;
+        subtitle.textContent = "Ok fine. You win. Tap YES 😄";
+        yesBtn.textContent = "YES (finally)";
+        // Stop dodging by removing listeners later
+    }
+
+    function revealDestination() {
+        reveal.style.display = "block";
+        subtitle.textContent = "Surprise time 🎉";
+        burstConfetti();
+    }
+
+    // Dodge logic: use pointer events so it works for mouse + touch
+    function onApproach(e) {
+        if (unlocked) return;
+
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        dodges += 1;
+        updateText();
+
+        // Make it gradually easier: after N dodges, unlock it
+        if (dodges >= 8) {
+            unlock();
+            return;
+        }
+
+        moveYesButtonAwayFrom(clientX, clientY);
+    }
+
+    // If she taps "NO", be dramatic
+    noBtn.addEventListener("click", () => {
+        stage.classList.remove("shake");
+        void stage.offsetWidth; // reflow for animation restart
+        stage.classList.add("shake");
+        subtitle.textContent = "Ouch. That hurt. Try YES 🙃";
+    });
+
+    // Try to dodge when pointer gets close or hovers/touches
+    yesBtn.addEventListener("pointerenter", onApproach);
+    yesBtn.addEventListener("pointerdown", (e) => {
+        if (!unlocked) {
+            e.preventDefault();
+            onApproach(e);
+        }
+    });
+
+    // When unlocked, allow click
+    yesBtn.addEventListener("click", () => {
+        if (!unlocked) return;
+        revealDestination();
+        yesBtn.disabled = true;
+        noBtn.disabled = true;
+        yesBtn.style.opacity = "0.6";
+        noBtn.style.opacity = "0.6";
+    });
+
+    // Confetti (tiny, self-contained)
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+
+    function resize() {
+        canvas.width = window.innerWidth * devicePixelRatio;
+        canvas.height = window.innerHeight * devicePixelRatio;
+        ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    function burstConfetti() {
+        const pieces = [];
+        const count = 140;
+
+        for (let i = 0; i < count; i++) {
+            pieces.push({
+                x: window.innerWidth / 2 + (Math.random() * 60 - 30),
+                y: window.innerHeight / 3 + (Math.random() * 30 - 15),
+                vx: (Math.random() * 6 - 3),
+                vy: (Math.random() * -7 - 3),
+                r: 2 + Math.random() * 4,
+                rot: Math.random() * Math.PI,
+                vr: (Math.random() * 0.2 - 0.1),
+                life: 80 + Math.floor(Math.random() * 40)
+            });
+        }
+
+        let frame = 0;
+        function tick() {
+            frame++;
+            ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+            for (const p of pieces) {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.18;
+                p.rot += p.vr;
+                p.life -= 1;
+
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rot);
+                ctx.fillRect(-p.r, -p.r, p.r * 2.2, p.r * 2.2);
+                ctx.restore();
+            }
+
+            // Simple fade by clearing less later
+            if (frame < 140 && pieces.some(p => p.life > 0 && p.y < window.innerHeight + 50)) {
+                requestAnimationFrame(tick);
+            } else {
+                ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            }
+        }
+
+        // Pick random colors per frame (simple + fun)
+        const originalFill = ctx.fillStyle;
+        const palette = ["#60a5fa", "#34d399", "#fb7185", "#fbbf24", "#a78bfa", "#22c55e", "#f472b6"];
+        const oldFillRect = ctx.fillRect.bind(ctx);
+        ctx.fillRect = (...args) => {
+            ctx.fillStyle = palette[(Math.random() * palette.length) | 0];
+            oldFillRect(...args);
+        };
+
+        tick();
+
+        // Restore
+        setTimeout(() => {
+            ctx.fillRect = oldFillRect;
+            ctx.fillStyle = originalFill;
+        }, 1000);
+    }
+</script>
+</body>
+</html>
