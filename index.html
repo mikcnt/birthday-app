@@ -730,7 +730,7 @@
                     return;
                 }
                 if (trial3FailCount === 3) {
-                    setTrial3Lines(["L'hai già rovinato."]);
+                    setTrial3Lines(["Stai facendo un casino! Dai su."]);
                     trial3Locked = true;
                     showEmojiChoices(false);
                     showSequenceDisplay(true);
@@ -739,14 +739,14 @@
                 }
 
                 trial3Locked = true;
-                setTrial3Lines(["Aspetta."]);
+                setTrial3Lines(["Aspetta..."]);
                 setTrial3Timer(() => addTrial3Line("Hai ragione."), 700);
                 setTrial3Timer(() => addTrial3Line("Manca uno degli emoji."), 1400);
-                setTrial3Timer(() => setTrial3Lines(["Questo... è sfortunato."]), 2400);
+                setTrial3Timer(() => setTrial3Lines(["...ooops?"]), 2400);
                 setTrial3Timer(() => {
                     setTrial3Lines([
-                        "Ok, chiaramente questo test è fatto male.",
-                        "O forse non devi saperlo ancora.",
+                        "Vabbè, dai. Chiaramente questo test è stato fatto un po' male.",
+                        "Ma io non mi prendo nessuna responsabilità, LOL",
                     ]);
                     endTrial3();
                 }, 3600);
